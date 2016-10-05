@@ -1,0 +1,16 @@
+{
+    "name": "patgrudniewski/ntlm-soap",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Patryk Grudniewski",
+            "email": "patgrudniewski@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {},
+    "autoload": {
+        "psr-4": {"PG\\NTLMSoap": "src/"}
+    }
+}
