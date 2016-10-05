@@ -9,8 +9,5 @@
         }
     ],
     "minimum-stability": "stable",
-    "require": {},
-    "autoload": {
-        "psr-4": {"PG\\NTLMSoap": "src/"}
-    }
+    "require": {}
 }
