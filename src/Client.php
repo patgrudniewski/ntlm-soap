@@ -1,6 +1,6 @@
 <?php
 
-namespace PG\NTLMSoap;
+namespace PG\NtlmSoap;
 
 /**
  * @author Patryk Grudniewski <patgrudniewski@gmail.com>
