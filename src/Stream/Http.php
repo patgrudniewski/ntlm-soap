@@ -25,6 +25,13 @@ class Http
      */
     protected $adapter;
 
+    /**
+     * @param string $path
+     * @param string $mode
+     * @param int $options
+     * @param string &$openedPath
+     * @return bool
+     */
     public function stream_open($path, $mode, $options, $openedPath)
     {
         $adapter = curl_init($path);
@@ -46,6 +53,7 @@ class Http
         }
 
         $this->adapter = $adapter;
+        $openedPath = $path;
 
         return true;
     }
