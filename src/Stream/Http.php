@@ -68,6 +68,27 @@ class Http
     }
 
     /**
+     * @param int $cast_as
+     * @return resource
+     */
+    final public function stream_cast($cast_as)
+    {
+        return $this->adapter;
+    }
+
+    /**
+     * @param int $offset
+     * @param int $whence
+     * @return bool
+     */
+    final public function stream_seek($offset, $whence = SEEK_SET)
+    {
+        $this->buffer->seek($offset, $whence);
+
+        return true;
+    }
+
+    /**
      * @return bool
      */
     final public function stream_eof()
@@ -94,6 +115,16 @@ class Http
     }
 
     /**
+     * @return array
+     */
+    final public function stream_stat()
+    {
+        return [
+            'size' => $this->buffer->getLength(),
+        ];
+    }
+
+    /**
      * @param string $path
      * @param int $flags
      * @return array
@@ -116,17 +147,56 @@ class Http
         $accessor = PropertyAccess::createPropertyAccessor();
         $contextParams = stream_context_get_params($context);
 
+        // get headers from context params
+        $headers = [];
         try {
-            $headers = $accessor->getValue($contextParams, '[options][http][header]');
-        } catch (AccessException $e) {
-            $headers = '';
-        }
+            $raw = $accessor->getValue($contextParams, '[options][http][header]');
+            $headers = $this->parseHeaders($raw);
+        } catch (AccessException $e) {  }
+
+        // get auth info
         $matches = [];
-        if (preg_match('/^Authorization: [^ ]+ (.*)$/m', $headers, $matches)) {
+        if (
+            array_key_exists('authorization', $headers)
+            && preg_match('/^Authorization: [^ ]+ (.*)$/m', $headers['authorization'], $matches)
+        ) {
             curl_setopt($adapter, CURLOPT_USERPWD, base64_decode($matches[1]));
+            unset($headers['authorization']);
         }
 
+        curl_setopt($adapter, CURLOPT_HTTPHEADER, array_values($headers));
+
+        // get http method from context params
+        try {
+            $method = strtoupper($accessor->getValue($contextParams, '[options][http][method]'));
+            curl_setopt($adapter, CURLOPT_CUSTOMREQUEST, $method);
+        } catch (AccessException $e) {  }
+
+        // get http content from context params
+        try {
+            $content = $accessor->getValue($contextParams, '[options][http][content]');
+            curl_setopt($adapter, CURLOPT_POSTFIELDS, $content);
+        } catch (AccessException $e) {  }
+
         return $adapter;
+    }
+
+    /**
+     * @param string $raw
+     * @return array
+     */
+    protected function parseHeaders($raw)
+    {
+        $headers = [];
+
+        $rawArray = explode("\n", $raw);
+        foreach ($rawArray as $header) {
+            $matches = [];
+            preg_match('/^([^:]+): (.+)$/', $header, $matches);
+            $headers[strtolower($matches[1])] = $matches[0];
+        }
+
+        return $headers;
     }
 
     /**
