@@ -62,34 +62,35 @@ class Http
      * @param int $count
      * @return string
      */
-    public function stream_read($count)
+    final public function stream_read($count)
     {
-        throw new \Exception('Method ' . __METHOD__ . ' not implemented');
+        return $this->buffer->read($count);
     }
 
-    public function stream_write()
+    /**
+     * @return bool
+     */
+    final public function stream_eof()
     {
-        throw new \Exception('Method ' . __METHOD__ . ' not implemented');
+        return $this->buffer->isEOF();
     }
 
-    public function stream_eof()
+    /**
+     * @return bool
+     */
+    final public function stream_flush()
     {
-        throw new \Exception('Method ' . __METHOD__ . ' not implemented');
+        $this->buffer = null;
+
+        return true;
     }
 
-    public function stream_tell()
+    /**
+     * @return int
+     */
+    final public function stream_tell()
     {
-        throw new \Exception('Method ' . __METHOD__ . ' not implemented');
-    }
-
-    public function stream_flush()
-    {
-        throw new \Exception('Method ' . __METHOD__ . ' not implemented');
-    }
-
-    public function stream_stat()
-    {
-        throw new \Exception('Method ' . __METHOD__ . ' not implemented');
+        return $this->buffer->getPosition();
     }
 
     /**
@@ -97,7 +98,7 @@ class Http
      * @param int $flags
      * @return array
      */
-    public function url_stat($path, $flags)
+    final public function url_stat($path, $flags)
     {
         return parse_url($path);
     }

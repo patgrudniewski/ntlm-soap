@@ -32,4 +32,32 @@ class Buffer
         $this->position = 0;
         $this->length = strlen($buffer);
     }
+
+    /**
+     * @param int $count
+     * @return string
+     */
+    public function read($count)
+    {
+        $read = substr($this->buffer, $this->position, $count);
+        $this->position += min($count, $this->length);
+
+        return $read;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEOF()
+    {
+        return $this->length == $this->position;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPosition()
+    {
+        return $this->position;
+    }
 }
