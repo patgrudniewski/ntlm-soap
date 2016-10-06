@@ -2,6 +2,7 @@
 
 namespace PG\NtlmSoap\Stream;
 
+use PG\NtlmSoap\Buffer;
 use PG\NtlmSoap\Exception\CurlRequestException;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -36,6 +37,12 @@ class Http
     final public function stream_open($path, $mode, $options, $openedPath)
     {
         $this->adapter = $this->initAdapter($path, $this->context);
+
+        try {
+            $this->buffer = $this->initBuffer($this->adapter);
+        } catch (CurlRequestException $e) {
+            return false;
+        }
 
         $openedPath = $path;
 
@@ -119,5 +126,20 @@ class Http
         }
 
         return $adapter;
+    }
+
+    /**
+     * @param resource $adapter
+     * @throws CurlRequestException
+     * @return Buffer
+     */
+    private function initBuffer($adapter)
+    {
+        $response = curl_exec($adapter);
+        if (false === $response) {
+            throw new CurlRequestException($adapter);
+        }
+
+        return new Buffer($response);
     }
 }
