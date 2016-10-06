@@ -40,7 +40,8 @@ class Buffer
     public function read($count)
     {
         $read = substr($this->buffer, $this->position, $count);
-        $this->position += min($count, $this->length);
+
+        $this->seek($count, SEEK_CUR);
 
         return $read;
     }
@@ -59,5 +60,36 @@ class Buffer
     public function getPosition()
     {
         return $this->position;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLength()
+    {
+        return $this->length;
+    }
+
+    /**
+     * @param int $offset
+     * @param int $whence
+     * @return void
+     */
+    public function seek($offset, $whence = SEEK_SET)
+    {
+        switch ($whence) {
+            case SEEK_CUR:
+                $pos = $this->position;
+                break;
+            case SEEK_END:
+                $pos = $this->length;
+                break;
+            case SEEK_SET:
+            default:
+                $pos = 0;
+                break;
+        }
+
+        $this->position = min($pos + $offset, $this->length);
     }
 }
