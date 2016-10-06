@@ -2,6 +2,7 @@
 
 namespace PG\NtlmSoap\Stream;
 
+use PG\NtlmSoap\Exception\CurlRequestException;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
@@ -16,7 +17,7 @@ class Http
     public $context;
 
     /**
-     * @var string
+     * @var Buffer
      */
     protected $buffer;
 
@@ -32,39 +33,29 @@ class Http
      * @param string &$openedPath
      * @return bool
      */
-    public function stream_open($path, $mode, $options, $openedPath)
+    final public function stream_open($path, $mode, $options, $openedPath)
     {
-        $adapter = curl_init($path);
-        curl_setopt($adapter, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($adapter, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-        curl_setopt($adapter, CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
+        $this->adapter = $this->initAdapter($path, $this->context);
 
-        $accessor = PropertyAccess::createPropertyAccessor();
-        $contextParams = stream_context_get_params($this->context);
-
-        try {
-            $headers = $accessor->getValue($contextParams, '[options][http][header]');
-        } catch (AccessException $e) {
-            $headers = '';
-        }
-        $matches = [];
-        if (preg_match('/^Authorization: [^ ]+ (.*)$/m', $headers, $matches)) {
-            curl_setopt($adapter, CURLOPT_USERPWD, base64_decode($matches[1]));
-        }
-
-        $this->adapter = $adapter;
         $openedPath = $path;
 
         return true;
     }
 
-    public function stream_close()
+    /**
+     * @return void
+     */
+    final public function stream_close()
     {
         curl_close($this->adapter);
         $this->adapter = null;
     }
 
-    public function stream_read()
+    /**
+     * @param int $count
+     * @return string
+     */
+    public function stream_read($count)
     {
         throw new \Exception('Method ' . __METHOD__ . ' not implemented');
     }
@@ -102,5 +93,31 @@ class Http
     public function url_stat($path, $flags)
     {
         return parse_url($path);
+    }
+
+    /**
+     * @return resource
+     */
+    protected function initAdapter($path, $context)
+    {
+        $adapter = curl_init($path);
+        curl_setopt($adapter, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($adapter, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        curl_setopt($adapter, CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
+
+        $accessor = PropertyAccess::createPropertyAccessor();
+        $contextParams = stream_context_get_params($context);
+
+        try {
+            $headers = $accessor->getValue($contextParams, '[options][http][header]');
+        } catch (AccessException $e) {
+            $headers = '';
+        }
+        $matches = [];
+        if (preg_match('/^Authorization: [^ ]+ (.*)$/m', $headers, $matches)) {
+            curl_setopt($adapter, CURLOPT_USERPWD, base64_decode($matches[1]));
+        }
+
+        return $adapter;
     }
 }
