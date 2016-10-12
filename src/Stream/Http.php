@@ -5,7 +5,7 @@ namespace PG\NtlmSoap\Stream;
 use PG\NtlmSoap\Buffer;
 use PG\NtlmSoap\Exception\CurlRequestException;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
-use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 /**
  * @author Patryk Grudniewski <patgrudniewski@gmail.com>
@@ -34,7 +34,7 @@ class Http
      * @param string &$openedPath
      * @return bool
      */
-    final public function stream_open($path, $mode, $options, &$openedPath)
+    final public function stream_open($path, $mode, $options, $openedPath)
     {
         $this->adapter = $this->initAdapter($path, $this->context);
 
@@ -54,7 +54,6 @@ class Http
      */
     final public function stream_close()
     {
-        curl_close($this->adapter);
         $this->adapter = null;
     }
 
@@ -144,7 +143,7 @@ class Http
         curl_setopt($adapter, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($adapter, CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
 
-        $accessor = PropertyAccess::createPropertyAccessor();
+        $accessor = new PropertyAccessor(false, true);
         $contextParams = stream_context_get_params($context);
 
         // get headers from context params
@@ -153,6 +152,11 @@ class Http
             $raw = $accessor->getValue($contextParams, '[options][http][header]');
             $headers = $this->parseHeaders($raw);
         } catch (AccessException $e) {  }
+
+        // unset connection header
+        if (array_key_exists('connection', $headers)) {
+            unset($headers['connection']);
+        }
 
         // get auth info
         $matches = [];
@@ -192,7 +196,9 @@ class Http
         $rawArray = explode("\n", $raw);
         foreach ($rawArray as $header) {
             $matches = [];
-            preg_match('/^([^:]+): (.+)$/', $header, $matches);
+            if (!preg_match('/^([^:]+): (.+)$/', $header, $matches)) {
+                continue;
+            };
             $headers[strtolower($matches[1])] = $matches[0];
         }
 

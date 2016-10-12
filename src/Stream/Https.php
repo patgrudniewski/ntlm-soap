@@ -3,7 +3,7 @@
 namespace PG\NtlmSoap\Stream;
 
 use Symfony\Component\PropertyAccess\Exception\AccessException;
-use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 /**
  * @author Patryk Grudniewski <patgrudniewski@gmail.com>
@@ -16,7 +16,7 @@ class Https extends Http
     protected function initAdapter($path, $context)
     {
         $adapter = parent::initAdapter($path, $context);
-        $accessor = PropertyAccess::createPropertyAccessor();
+        $accessor = new PropertyAccessor(false, true);
         $contextParams = stream_context_get_params($context);
 
         try {
