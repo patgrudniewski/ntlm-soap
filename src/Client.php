@@ -29,12 +29,13 @@ class Client extends \SoapClient
         $context = array_merge_recursive($context['options'], [
             'http' => [
                 'method' => 'POST',
-                'content' => $request,
+                'content' => trim($request),
                 'header' => [
                     sprintf('SOAPAction: %s', $action),
                     'Content-Type: text/xml; charset=utf-8',
                     'User-Agent: PHP-NTLM-SOAP',
-                ]
+                ],
+                'timeout' => $this->_connection_timeout,
             ],
         ]);
 

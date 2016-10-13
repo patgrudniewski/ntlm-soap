@@ -170,6 +170,13 @@ class Http
 
         curl_setopt($adapter, CURLOPT_HTTPHEADER, array_values($headers));
 
+        // get http timeout
+        try {
+            if ($timeout = $accessor->getValue($contextParams, '[options][http][timeout]')) {
+                curl_setopt($adapter, CURL_TIMEOUT, (int)$timeout);
+            }
+        } catch (AccessException $e) {  }
+
         // get http method from context params
         try {
             $method = strtoupper($accessor->getValue($contextParams, '[options][http][method]'));
