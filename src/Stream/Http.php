@@ -54,6 +54,8 @@ class Http
      */
     final public function stream_close()
     {
+        curl_close($this->adapter);
+
         $this->adapter = null;
     }
 
