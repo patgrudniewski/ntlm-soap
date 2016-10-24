@@ -173,7 +173,7 @@ class Http
         // get http timeout
         try {
             if ($timeout = $accessor->getValue($contextParams, '[options][http][timeout]')) {
-                curl_setopt($adapter, CURL_TIMEOUT, (int)$timeout);
+                curl_setopt($adapter, CURLOPT_TIMEOUT, (int)$timeout);
             }
         } catch (AccessException $e) {  }
 
