@@ -57,6 +57,7 @@ class Http
         curl_close($this->adapter);
 
         $this->adapter = null;
+        $this->buffer = null;
     }
 
     /**
@@ -102,8 +103,6 @@ class Http
      */
     final public function stream_flush()
     {
-        $this->buffer = null;
-
         return true;
     }
 
