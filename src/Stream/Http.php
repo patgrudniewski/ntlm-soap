@@ -34,7 +34,7 @@ class Http
      * @param string &$openedPath
      * @return bool
      */
-    final public function stream_open($path, $mode, $options, $openedPath)
+    final public function stream_open($path, $mode, $options, &$openedPath)
     {
         $this->adapter = $this->initAdapter($path, $this->context);
 
