@@ -24,6 +24,16 @@ class Client extends \SoapClient
     public function __doRequest($request, $location, $action, $version, $one_way = 0)
     {
         $this->__last_request = $request;
+        
+        $contentType = '';
+        switch ($version) {
+            case SOAP_1_2:
+                $contentType = 'application/soap+xml';
+                break;
+            case SOAP_1_1:
+                $contentType = 'text/xml';
+            default:
+        }
 
         $context = stream_context_get_params($this->_stream_context);
         $context = array_merge_recursive($context['options'], [
@@ -32,7 +42,7 @@ class Client extends \SoapClient
                 'content' => trim($request),
                 'header' => [
                     sprintf('SOAPAction: %s', $action),
-                    'Content-Type: text/xml; charset=utf-8',
+                    sprintf('Content-Type: %s; charset=utf-8', $contentType),
                     'User-Agent: PHP-NTLM-SOAP',
                 ],
                 'timeout' => $this->_connection_timeout,
