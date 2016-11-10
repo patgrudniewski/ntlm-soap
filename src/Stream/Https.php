@@ -24,6 +24,11 @@ class Https extends Http
             curl_setopt($adapter, CURLOPT_CAINFO, $cert);
         } catch (AccessException $e) {  }
 
+        try {
+            $verify = $accessor->getValue($contextParams, '[options][ssl][verify_peer]');
+            curl_setopt($adapter, CURLOPT_SSL_VERIFYPEER, $verify);
+        } catch (AccessException $e) {  }
+
         return $adapter;
     }
 }
